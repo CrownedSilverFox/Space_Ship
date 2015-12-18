@@ -18,7 +18,8 @@ class Vector:
     def __sub__(self, other):
         return self + other * -1
 
-    def get_len(self):
+    @property
+    def len(self):
         return math.sqrt(self.x**2 + self.y**2)
 
     def rotate(self, angle):
@@ -31,4 +32,4 @@ class Vector:
         return self.x, self.y
 
     def normal(self):
-        return Vector((self.x/self.get_len(), self.y/self.get_len()))
+        return Vector((self.x/self.len, self.y/self.len))

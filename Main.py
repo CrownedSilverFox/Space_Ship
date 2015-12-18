@@ -7,7 +7,7 @@ TURN_LEFT = 1
 TURN_RIGHT = 2
 SLOWLY = 3
 FASTER = 4
-FPS = 400
+FPS = 60
 SIZE = (800, 600)
 
 
@@ -16,26 +16,26 @@ class Ship:
     def __init__(self, pos):
         self.pos = Vector(pos)
         self.speed = Vector((1, 0))
-        self.image = pygame.Surface((100, 100))
+        self.image = pygame.Surface((40, 40))
         self.status = NORMAL
         self.vect = self.speed
-        self.speed_up = 100
+        self.speed_up = 1.4
 
     def move(self):
         if self.status == TURN_LEFT:
-            self.speed.rotate(-30)
+            self.speed.rotate(-10)
         elif self.status == TURN_RIGHT:
-            self.speed.rotate(30)
+            self.speed.rotate(10)
         elif self.status == SLOWLY:
-            if self.speed.get_len() == 0:
+            if self.speed.len == 0:
                 return
-            if self.speed.get_len() < 1:
+            if self.speed.len < self.speed_up:
                 self.vect = self.speed.normal() * self.speed_up
                 self.speed = Vector((0, 0))
             else:
                 self.speed -= (self.speed.normal()) * self.speed_up
         elif self.status == FASTER:
-            if self.speed.get_len() == 0:
+            if self.speed.len == 0:
                 self.speed = self.vect
             self.speed += self.speed.normal() * self.speed_up
         self.pos += self.speed
@@ -64,17 +64,18 @@ class Ship:
     def update(self):
         self.move()
 
-    def render(self, screen):
-        screen.blit(self.image, self.pos)
-
     def draw(self):
-        pygame.draw.rect(self.image, (200, 200, 255), (10, 10, 20, 10))
-        pygame.draw.polygon(self.image, (200, 200, 255), ((0, 15), (10, 10), (10, 20)))
-        pygame.draw.polygon(self.image, (200, 200, 255), ((15, 10), (18, 8), (18, 22)))
+        # draw_ship
+        pygame.draw.circle(self.image, (100, 100, 255), (20, 20), 20)
+        # draw rect
+        pygame.draw.rect(self.image, (100, 100, 100), self.image.get_rect(), 2)
 
     def render(self, screen):
         screen.blit(self.image, self.pos.as_point())
-        #pygame.draw.line(screen, (100, 255, 100), self.pos.as_point(), (self.pos + self.speed*5).as_point())
+        pygame.draw.line(screen, (200, 0, 0), (self.pos.as_point()[0]+20, self.pos.as_point()[1]+20), ((self.pos + self.
+                                                                                                       speed * 5).
+                                                                                                       as_point()[0]+20, (self.pos + self.
+                                                                                                       speed * 5).as_point()[1]+20))
         self.draw()
 
 
@@ -83,7 +84,7 @@ pygame.init()
 pygame.display.set_mode(SIZE)
 screen = pygame.display.get_surface()
 
-ship = Ship((100, 100))
+ship = Ship((400, 300))
 clock = pygame.time.Clock()
 while True:
     for event in pygame.event.get():
@@ -93,9 +94,9 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 sys.exit()
         ship.events(event)
-    clock.tick(FPS)
+    dt = clock.tick(FPS)
+    print(dt)
     ship.update()
-    print(ship.speed.get_len())
     screen.fill((0, 0, 0))
     ship.render(screen)
     pygame.display.flip()
