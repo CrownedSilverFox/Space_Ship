@@ -19,9 +19,12 @@ class Ship:
         self.image = pygame.Surface((40, 40))
         self.status = NORMAL
         self.vect = self.speed
-        self.speed_up = 1.4
+        self.speed_up = 0.5
 
     def move(self):
+        # statuses = {TURN_LEFT: self.speed.rotate(-10),
+        #             TURN_RIGHT: self.speed.rotate(10)}
+        # statuses[self.status]
         if self.status == TURN_LEFT:
             self.speed.rotate(-10)
         elif self.status == TURN_RIGHT:
@@ -29,23 +32,24 @@ class Ship:
         elif self.status == SLOWLY:
             if self.speed.len == 0:
                 return
-            if self.speed.len < self.speed_up:
-                self.vect = self.speed.normal() * self.speed_up
+            if self.speed.len <= self.speed_up:
+                self.vect = self.speed.normal()
                 self.speed = Vector((0, 0))
             else:
                 self.speed -= (self.speed.normal()) * self.speed_up
         elif self.status == FASTER:
-            if self.speed.len == 0:
-                self.speed = self.vect
+            if not self.speed.len:
+                self.speed = self.vect * self.speed_up
             self.speed += self.speed.normal() * self.speed_up
         self.pos += self.speed
+
         if self.pos.x > SIZE[0]:
             self.pos.x = 0
-        if self.pos.x < 0:
+        elif self.pos.x < 0:
             self.pos.x = SIZE[0]
-        if self.pos.y > SIZE[1]:
+        elif self.pos.y > SIZE[1]:
             self.pos.y = 0
-        if self.pos.y < 0:
+        elif self.pos.y < 0:
             self.pos.y = SIZE[1]
 
     def events(self, event):
