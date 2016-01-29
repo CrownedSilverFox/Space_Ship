@@ -2,6 +2,8 @@ import pygame
 from Vectors import Vector
 from Settings import *
 
+clock = pygame.time.Clock()
+
 
 class Ship:
     #  Космический глаз кильки
@@ -16,14 +18,18 @@ class Ship:
         self.draw()
         self.angle_turn = 10
 
-    def move(self):
+    def turn(self, dt):
         if self.status == TURN_LEFT:
-            self.speed.rotate(self.angle_turn*-1)
-            self.angle -= self.angle_turn
+            self.speed.rotate(self.angle_turn*(dt/16)*(-1))
+            self.vect.rotate(self.angle_turn*(dt/16)*(-1))
+            self.angle -= self.angle_turn*dt/16
         elif self.status == TURN_RIGHT:
-            self.speed.rotate(self.angle_turn)
-            self.angle += self.angle_turn
-        elif self.status == SLOWLY:
+            self.speed.rotate(self.angle_turn*(dt/16))
+            self.vect.rotate(self.angle_turn*(dt/16))
+            self.angle += self.angle_turn*dt/16
+
+    def speed_change(self):
+        if self.status == SLOWLY:
             if self.speed.len == 0:
                 return
             if self.speed.len <= self.speed_up:
@@ -35,7 +41,9 @@ class Ship:
             if not self.speed.len:
                 self.speed = self.vect * self.speed_up
             self.speed += self.speed.normal() * self.speed_up
-        self.pos += self.speed
+
+    def move(self, dt):
+        self.pos += self.speed * (dt/16)
 
         if self.pos.x > SIZE.w:
             self.pos.x = 0
@@ -59,10 +67,13 @@ class Ship:
         elif event.type == pygame.KEYUP:
             self.status = NORMAL
 
-    def update(self):
-        self.move()
+    def update(self, dt):
+        self.turn(dt)
+        self.speed_change()
+        self.move(dt)
 
     def rot_center(self, image, angle):
+        # rotate with saving center of ship
         orig_rect = image.get_rect()
         rot_image = pygame.transform.rotate(image, angle)
         rot_rect = orig_rect.copy()
@@ -74,7 +85,7 @@ class Ship:
         # draw_ship
         pygame.draw.circle(self.image, (100, 100, 255), (20, 20), 20)
         pygame.draw.polygon(self.image, (0, 255, 0), ((25, 15), (25, 25), (35, 20)))
-        # draw rect
+        # draw frame
         pygame.draw.rect(self.image, (100, 100, 100), self.image.get_rect(), 2)
 
     def render(self, screen):
