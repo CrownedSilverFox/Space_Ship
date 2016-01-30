@@ -1,6 +1,7 @@
 import pygame
 from Vectors import Vector
 from Settings import *
+import math
 
 clock = pygame.time.Clock()
 
@@ -13,37 +14,44 @@ class Ship:
         self.image = pygame.Surface((40, 40), pygame.SRCALPHA)
         self.status = NORMAL
         self.vect = self.speed
-        self.speed_up = 0.5
-        self.angle = 0
+        self.speed_up = 0.5 * 60 / FPS
         self.draw()
         self.angle_turn = 10
 
-    def turn(self, dt):
+    @property
+    def angle(self):
+        try:
+            return 360 - math.degrees(math.acos(self.vect.x / self.vect.len)) if self.vect.y > 0 \
+                else math.degrees(math.acos(self.vect.x / self.vect.len))
+        except ZeroDivisionError:
+            return 0
+
+    def turn(self):
         if self.status == TURN_LEFT:
-            self.speed.rotate(self.angle_turn*(dt/16)*(-1))
-            self.vect.rotate(self.angle_turn*(dt/16)*(-1))
-            self.angle -= self.angle_turn*dt/16
+            self.speed.rotate(self.angle_turn * (60 / FPS) * (-1))
+            if self.speed.len:
+                self.vect = self.speed.normal
         elif self.status == TURN_RIGHT:
-            self.speed.rotate(self.angle_turn*(dt/16))
-            self.vect.rotate(self.angle_turn*(dt/16))
-            self.angle += self.angle_turn*dt/16
+            self.speed.rotate(self.angle_turn * (60 / FPS))
+            if self.speed.len:
+                self.vect = self.speed.normal
 
     def speed_change(self):
         if self.status == SLOWLY:
             if self.speed.len == 0:
                 return
             if self.speed.len <= self.speed_up:
-                self.vect = self.speed.normal()
+                self.vect = self.speed.normal
                 self.speed = Vector((0, 0))
             else:
-                self.speed -= (self.speed.normal()) * self.speed_up
+                self.speed -= self.speed.normal * self.speed_up
         elif self.status == FASTER:
             if not self.speed.len:
                 self.speed = self.vect * self.speed_up
-            self.speed += self.speed.normal() * self.speed_up
+            self.speed += self.speed.normal * self.speed_up
 
-    def move(self, dt):
-        self.pos += self.speed * (dt/16)
+    def move(self):
+        self.pos += self.speed * (60 / FPS)
 
         if self.pos.x > SIZE.w:
             self.pos.x = 0
@@ -67,10 +75,10 @@ class Ship:
         elif event.type == pygame.KEYUP:
             self.status = NORMAL
 
-    def update(self, dt):
-        self.turn(dt)
+    def update(self):
+        self.turn()
         self.speed_change()
-        self.move(dt)
+        self.move()
 
     def rot_center(self, image, angle):
         # rotate with saving center of ship
@@ -89,7 +97,7 @@ class Ship:
         pygame.draw.rect(self.image, (100, 100, 100), self.image.get_rect(), 2)
 
     def render(self, screen):
-        image = self.rot_center(self.image, self.angle*-1)
+        image = self.rot_center(self.image, self.angle)
         screen.blit(image, self.pos.as_point())
         pygame.draw.line(screen, (200, 0, 0),
                          (self.pos.x + self.image.get_rect().w / 2, self.pos.y + self.image.get_rect().h / 2), (

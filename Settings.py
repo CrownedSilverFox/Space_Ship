@@ -1,5 +1,5 @@
 from pygame import Rect
-FPS = 60
+FPS = 20
 SIZE = Rect(0, 0, 800, 600)
 # Don't change
 NORMAL = 0

@@ -31,5 +31,6 @@ class Vector:
     def as_point(self):
         return self.x, self.y
 
+    @property
     def normal(self):
         return Vector((self.x/self.len, self.y/self.len))

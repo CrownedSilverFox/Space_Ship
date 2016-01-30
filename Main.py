@@ -20,7 +20,7 @@ while True:
                 sys.exit()
         ship.events(event)
     dt = clock.tick(FPS)
-    ship.update(dt)
+    ship.update()
     screen.fill((0, 0, 0))
     ship.render(screen)
     pygame.display.flip()
